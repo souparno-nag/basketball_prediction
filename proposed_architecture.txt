@@ -1,0 +1,31 @@
+The dataset involved is "NBA Database" available on Kaggle (which is updated regularly). At the present moment, it includes 64000+ games, 4800+ games and 30 teams.
+
+Missing Value Treatment - 
+A systematic analysis of missing values was conducted across all features. The percentage of missing values was calculated for each variable, and features with more than 10% missing data were removed from the dataset to maintain data integrity and avoid potential bias in subsequent analyses.
+
+Data Type Optimization - 
+The game_date feature was converted from object to datetime format to enable proper temporal analysis and sorting operations.
+
+Feature Engineering and Encoding -
+The categorical features wl_home and wl_away (win/loss indicators) were transformed into two new numerical features:
+Winner: Contains the team ID of the winning team
+Loser: Contains the team ID of the losing team
+Redundant features were removed, including wl_home, wl_away, team_name_home, and team_name_away, as the essential information was preserved in the newly created features.
+
+Data Organization -
+The final preprocessed dataset was sorted chronologically by game_date to facilitate time-series analysis and maintain logical data flow for subsequent modeling and visualization tasks.
+
+Elo Rating System Implementation -
+A comprehensive Elo rating system was implemented to quantify team strength and performance dynamics throughout the dataset. The compute_elo function calculates both global and surface-specific ratings using a K-factor of 32 and initial ratings of 1000 points. For each game, the system captures pre-match Elo ratings for both teams, computes expected win probabilities using the standard Elo formula, and updates ratings based on actual outcomes. The algorithm maintains separate rating tracks for different playing surfaces and generates six new features: pre-game global ratings for winners and losers (winner_elo_pre, loser_elo_pre), the rating differential (elo_diff), and corresponding surface-specific metrics (winner_elo_surf_pre, loser_elo_surf_pre, elo_surf_diff). This dual-track approach provides robust strength metrics that adapt to team performance over time while accounting for surface-specific advantages, creating valuable predictive features for subsequent modeling phases.
+
+Head-to-Head Historical Feature Engineering -
+The add_h2h_feature function implements a head-to-head (H2H) historical performance tracker that quantifies the competitive balance between teams based on their previous encounters. The algorithm maintains a nested dictionary structure to record win counts between all team pairs throughout the dataset's chronological progression. For each game, the function captures the pre-match H2H differential by calculating the difference between the winner's historical victories over the loser minus the loser's victories over the winner, then updates the win count after recording the pre-match state. This approach generates the h2h_pre feature, which represents the historical competitive advantage one team holds over another before each game, providing valuable context about team-specific matchup dynamics that can influence game outcomes beyond general team strength metrics.
+
+Recent Form Analysis Feature -
+The `add_recent_form` function creates a rolling performance indicator that captures each team's competitive momentum leading into each game. Using a sliding window approach with a default lookback period of 10 games, the algorithm maintains deque structures (fixed-size queues) to efficiently track recent win-loss records for all teams. For each game, the function calculates the difference between the winner's and loser's recent win counts from their respective last N games before updating the records with the current match outcome (1 for win, 0 for loss). This generates the `recent_form_diff` feature, which quantifies the relative recent performance momentum between competing teams, providing insight into short-term form that may influence game outcomes independently of long-term strength ratings or historical head-to-head records.
+
+Categorical Variable Encoding -
+The categorical features in the dataset were systematically converted to numerical format using ordinal encoding to ensure compatibility with machine learning algorithms. An OrdinalEncoder from scikit-learn was applied to all columns with object data types, transforming categorical variables into integer representations while preserving their ordinal relationships where applicable. The encoding process iterates through each column, identifies object-type features, and applies the fit_transform method to convert string categories into numerical codes. This preprocessing step ensures that all features are in a consistent numerical format required for subsequent modeling phases while maintaining the dataset's structural integrity and feature relationships.
+
+Proposed Model: Stacking Ensemble Classifier -
+The final predictive model employs a stacking ensemble approach that combines multiple diverse base learners to maximize predictive performance through algorithmic diversity. The StackingClassifier architecture incorporates three complementary base estimators: Logistic Regression for linear decision boundaries, AdaBoost Classifier (100 estimators) for sequential error correction and feature importance weighting, and Multi-Layer Perceptron (MLP) for capturing complex non-linear patterns in the data. These base models generate meta-features that are fed into a Logistic Regression meta-learner, which learns optimal weightings to combine the individual predictions. This two-level learning approach leverages the strengths of different algorithmic paradigms—linear, boosting, and neural network methods—while the meta-learner optimally integrates their outputs to produce superior predictive accuracy compared to individual models, making it well-suited for the complex, multi-dimensional nature of NBA game outcome prediction.
