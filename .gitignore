@@ -3,3 +3,4 @@ nba.sqlite
 csv
 basketball-env
 df_final.parquet
+basketball_train_balanced.csv
